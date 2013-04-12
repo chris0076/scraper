@@ -2,7 +2,7 @@ import urllib
 import urllib2
 import pprint
 import json
-from multiprocessing import Pool
+import multiprocessing
 import os
 
 subjects = {
@@ -322,13 +322,16 @@ def run(key):
     except urllib2.URLError:
         return key
 
-def run_all():
-    p = Pool(4)
-    err = subjects.keys()
+def run_all(listing=None):
+    p = multiprocessing.Pool(multiprocessing.cpu_count())
+    if listing:
+        err = [x for x in listing if x in subjects]
+    else:
+        err = subjects.keys()
+
     while len(err):
         temp = p.map(run, err)
         err = [x for x in temp if x]
-        print err
     p.close()
     p.join()
 
