@@ -23,6 +23,7 @@ def load_course_data():
                         credits=c["credits"],
                         )
             a.save()
+
             if c.get("coreq"):
                 coreqlist.append(c)
 
@@ -51,30 +52,33 @@ def load_class_data():
             classes = json.load(f)
 
         for c in classes:
-            a = Class(
-                    course=Course.objects.get(number=c["course"], subject=c["subject"]),
-                    campus=c["campus"],
-                    crn=c["crn"],
-                    seats=c["seats"],
-                    enrolled=c["enrolled"],
-                    instructor=c["instructor"],
-                    section=c["section"],
-                )
-            a.save()
-
-            for x in c["location"]:
-                b = Location(
-                        c = a,
-                        online = x["online"],
-                        start_date = parse(x["start_date"]),
-                        end_date = parse(x["end_date"]),
-                        start_time = parse(x["start_time"]) if x["start_time"] else None,
-                        end_time = parse(x["end_time"]) if x["end_time"] else None,
-                        days_of_week = x["days_of_week"],
-                        building = x["building"],
-                        room = x["room"],
+            try:
+                a = Class(
+                        course=Course.objects.get(number=c["course"], subject=c["subject"]),
+                        campus=c["campus"],
+                        crn=c["crn"],
+                        seats=c["seats"],
+                        enrolled=c["enrolled"],
+                        instructor=c["instructor"],
+                        section=c["section"],
                     )
-                b.save()
+                a.save()
+
+                for x in c["location"]:
+                    b = Location(
+                            c = a,
+                            online = x["online"],
+                            start_date = parse(x["start_date"]),
+                            end_date = parse(x["end_date"]),
+                            start_time = parse(x["start_time"]) if x["start_time"] else None,
+                            end_time = parse(x["end_time"]) if x["end_time"] else None,
+                            days_of_week = x["days_of_week"],
+                            building = x["building"],
+                            room = x["room"],
+                        )
+                    b.save()
+            except Exception as e:
+                print e, c
 
 if __name__ == "__main__":
     load_course_data()
