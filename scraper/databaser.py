@@ -11,16 +11,19 @@ def load_course_data():
     with transaction.commit_on_success():
         coreqlist = []
         for fname in paths:
-            print fname
+            print os.path.basename(fname)
             with open(fname, "r") as f:
                 courses = json.load(f)
             for c in courses:
-                a, created = Course.objects.get_or_create(subject=c["subject"], number=c["course"])
-                a.prereqs=c.get("prereqs", "")
-                a.coreq=None
-                a.title=c["title"]
-                a.description=c["description"]
-                a.credits=c["credits"]
+                a = Course(
+                        subject=c["subject"],
+                        number=c["course"],
+                        prereqs=c.get("prereqs", ""),
+                        coreq=None,
+                        title=c["title"],
+                        description=c["description"],
+                        credits=c["credits"]
+                        )
                 a.save()
 
         for x in coreqlist:
@@ -44,18 +47,20 @@ def load_class_data():
     courses = set(glob.glob(os.path.join(os.getcwd(), "scraper/data/*courses.json")))
     with transaction.commit_on_success():
         for fname in both ^ courses:
-            print fname
+            print os.path.basename(fname)
             with open(fname, "r") as f:
                 classes = json.load(f)
 
             for c in classes:
-                a, created = Class.objects.get_or_create(crn=c["crn"])
-                a.campus=c["campus"]
-                a.course=Course.objects.get(number=c["course"], subject=c["subject"])
-                a.seats=c["seats"]
-                a.enrolled=c["enrolled"]
-                a.instructor=c["instructor"]
-                a.section=c["section"]
+                a = Class(
+                        crn=c["crn"],
+                        campus=c["campus"],
+                        course=Course.objects.get(number=c["course"], subject=c["subject"]),
+                        seats=c["seats"],
+                        enrolled=c["enrolled"],
+                        instructor=c["instructor"],
+                        section=c["section"]
+                        )
                 a.save()
 
                 for x in c["location"]:
