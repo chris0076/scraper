@@ -11,6 +11,9 @@ class Course(models.Model):
     credits = models.CharField(max_length=30)
     # levels = models.ForeignKey("Level")
 
+    def __unicode__(self):
+        return "%s" % self.title
+
 class Class(models.Model):
     course = models.ForeignKey("Course", null=True)
     campus = models.CharField(max_length=100)
@@ -19,6 +22,13 @@ class Class(models.Model):
     enrolled = models.IntegerField()
     instructor = models.CharField(max_length=100)
     section = models.CharField(max_length=10)
+
+    def __unicode__(self):
+        return "%s %s" % (self.crn, self.course)
+
+    @property
+    def locations(self):
+        return Location.objects.filter(c=self)
 
 class Location(models.Model):
     c = models.ForeignKey("Class")
@@ -30,3 +40,10 @@ class Location(models.Model):
     days_of_week = models.CharField(max_length=10, null=True)
     building = models.CharField(max_length=100, null=True)
     room = models.CharField(max_length=20, null=True)
+
+    def __unicode__(self):
+        if self.online:
+            string = "Online"
+        else:
+            string = "%s %s %s-%s on %s" % (self.building, self.room, self.start_time, self.end_time, self.days_of_week)
+        return string
