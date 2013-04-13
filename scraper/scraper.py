@@ -296,7 +296,7 @@ def run(key):
 
         print "Parsing %s Data" % key
         temp = parse_course_list(response.read())
-        with open(os.path.join(os.getcwd(), "scraper/data/%s_courses.json") % key, "w") as f:
+        with open(os.path.join(os.getcwd(), "scraper/data/%s.json") % key, "w") as f:
             json.dump(temp, f, sort_keys=True, indent=4, separators=(',', ': '))
 
         courseset = set(course["course"] for course in temp)
