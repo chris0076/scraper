@@ -18,8 +18,8 @@ class Class(models.Model):
     course = models.ForeignKey("Course", null=True)
     campus = models.CharField(max_length=100)
     crn = models.CharField(max_length=10)
-    seats = models.IntegerField()
-    enrolled = models.IntegerField()
+    seats = models.IntegerField(null=True)
+    enrolled = models.IntegerField(null=True)
     instructor = models.CharField(max_length=100)
     section = models.CharField(max_length=10)
 

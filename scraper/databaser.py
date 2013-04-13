@@ -4,64 +4,58 @@ import json
 from dateutil.parser import parse
 
 from models import Course, Class, Location
+from django.db import transaction
 
 def load_course_data():
     paths = set(glob.glob(os.path.join(os.getcwd(), "scraper/data/*courses.json")))
-    coreqlist = []
-    for fname in paths:
-        print fname
-        with open(fname, "r") as f:
-            courses = json.load(f)
-        for c in courses:
-            a = Course(
-                        number=c["course"],
-                        subject=c["subject"],
-                        prereqs=c.get("prereqs", ""),
-                        coreq=None,
-                        title=c["title"],
-                        description=c["description"],
-                        credits=c["credits"],
-                        )
-            a.save()
+    with transaction.commit_on_success():
+        coreqlist = []
+        for fname in paths:
+            print fname
+            with open(fname, "r") as f:
+                courses = json.load(f)
+            for c in courses:
+                a, created = Course.objects.get_or_create(subject=c["subject"], number=c["course"])
+                a.prereqs=c.get("prereqs", "")
+                a.coreq=None
+                a.title=c["title"]
+                a.description=c["description"]
+                a.credits=c["credits"]
+                a.save()
 
-            if c.get("coreq"):
-                coreqlist.append(c)
-
-    for x in coreqlist:
-        try:
-            temp = x["coreq"].split()
-            c1 = Course.objects.get(number=x["course"], subject=x["subject"])
-            c2 = Course.objects.get(number=temp[1], subject=temp[0])
-            if not c1.coreq and not c2.coreq:
-                c1.coreq = c2
-                c2.coreq = c1
-                c1.save()
-                c2.save()
-            elif not c2.coreq and c2.coreq:
-                print "AHH", c1, c2
-        except Exception as e:
-            print e, temp, (x["subject"], x["course"])
+        for x in coreqlist:
+            try:
+                temp = x["coreq"].split()
+                c1 = Course.objects.get(number=x["course"], subject=x["subject"])
+                c2 = Course.objects.get(number=temp[1], subject=temp[0])
+                if not c1.coreq and not c2.coreq:
+                    c1.coreq = c2
+                    c2.coreq = c1
+                    c1.save()
+                    c2.save()
+                elif not c2.coreq and c2.coreq:
+                    print "AHH", c1, c2
+            except Exception as e:
+                print e, temp, (x["subject"], x["course"])
 
 
 def load_class_data():
     both = set(glob.glob(os.path.join(os.getcwd(), "scraper/data/*.json")))
     courses = set(glob.glob(os.path.join(os.getcwd(), "scraper/data/*courses.json")))
-    for fname in both ^ courses:
-        print fname
-        with open(fname, "r") as f:
-            classes = json.load(f)
+    with transaction.commit_on_success():
+        for fname in both ^ courses:
+            print fname
+            with open(fname, "r") as f:
+                classes = json.load(f)
 
-        for c in classes:
-            try:
-                a = Class(
-                        course=Course.objects.get(number=c["course"], subject=c["subject"]),
-                        campus=c["campus"],
-                        crn=c["crn"],
-                        seats=c["seats"],
-                        enrolled=c["enrolled"],
-                        instructor=c["instructor"],
-                        section=c["section"],
-                    )
+            for c in classes:
+                a, created = Class.objects.get_or_create(crn=c["crn"])
+                a.campus=c["campus"]
+                a.course=Course.objects.get(number=c["course"], subject=c["subject"])
+                a.seats=c["seats"]
+                a.enrolled=c["enrolled"]
+                a.instructor=c["instructor"]
+                a.section=c["section"]
                 a.save()
 
                 for x in c["location"]:
@@ -77,8 +71,6 @@ def load_class_data():
                             room = x["room"],
                         )
                     b.save()
-            except Exception as e:
-                print e, c
 
 if __name__ == "__main__":
     load_course_data()
