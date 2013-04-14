@@ -1,18 +1,24 @@
 from django.db import models
 
+class Type(models.Model):
+    name = models.CharField(max_length=25)
+
+    def __unicode__(self):
+        return self.name
+
 class Course(models.Model):
     number = models.CharField(max_length=10)
     subject = models.CharField(max_length=10)
     prereqs = models.CharField(max_length=255)
     coreq = models.OneToOneField("self", null=True)
-    # scheduletype = models.ManyToManyField("ScheduleType")
+    types = models.ManyToManyField(Type)
     title = models.CharField(max_length=255)
     description = models.CharField(max_length=1000)
     credits = models.CharField(max_length=30)
     # levels = models.ForeignKey("Level")
 
     def __unicode__(self):
-        return "%s" % self.title
+        return self.title
 
 class Class(models.Model):
     course = models.ForeignKey("Course", null=True)

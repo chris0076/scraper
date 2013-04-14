@@ -3,7 +3,7 @@ import glob
 import json
 from dateutil.parser import parse
 
-from models import Course, Class, Location
+from models import Course, Class, Location, Type
 from django.db import transaction
 
 def load_course_data():
@@ -15,6 +15,12 @@ def load_course_data():
             with open(fname, "r") as f:
                 courses = json.load(f)
             for c in courses:
+                ts = []
+                for t in c["scheduletypes"]:
+                    x, created = Type.objects.get_or_create(name=t)
+                    ts.append(x)
+                    x.save()
+
                 a = Course(
                         subject=c["subject"],
                         number=c["course"],
@@ -22,9 +28,11 @@ def load_course_data():
                         coreq=None,
                         title=c["title"],
                         description=c["description"],
-                        credits=c["credits"]
+                        credits=c["credits"],
                         )
+
                 a.save()
+                a.types.add(*ts)
 
         for x in coreqlist:
             try:

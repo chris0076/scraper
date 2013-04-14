@@ -15,6 +15,7 @@ class Command(BaseCommand):
         cursor = connection.cursor()
         cursor.execute("DELETE FROM scraper_class")
         cursor.execute("DELETE FROM scraper_course")
+        cursor.execute("DELETE FROM scraper_course_types")
         cursor.execute("DELETE FROM scraper_location")
         load_course_data()
         load_class_data()
